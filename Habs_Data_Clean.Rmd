@@ -5,20 +5,39 @@ date: "3/23/2022"
 output: pdf_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include=FALSE, echo=TRUE}
+#set your working directory
+setwd("~/CalHabMap_FishCSVI")
+getwd()
+#install & load your packages
 library(pacman)
-pacman::p_load(tidyverse, tigris, lubridate, sf, mapview, finch)
+pacman::p_load(tidyverse, tigris, lubridate, sf, mapview, finch, cowplot)
+
+#set your ggplot theme
+mytheme <- theme_classic(base_size = 11) +
+  theme(axis.text = element_text(color = "black"), 
+        plot.title = element_text(hjust = 0.5), 
+        plot.subtitle = element_text(hjust = 0.5))
+theme_set(mytheme)
 ```
 
-```{r setup}
+```{r data input}
 # use finch package to read in the Darwin core archive file format
 hab_dwca <- dwca_read("https://www1.usgs.gov/obis-usa/ipt/archive.do?r=calhabmap&v=1.3")
 
 hab_events_raw <- read.delim(hab_dwca$data[1])
 hab_occ_raw <- read.delim(hab_dwca$data[2])
 water_qual_raw <- read.delim(hab_dwca$data[3])
+
+#save dataframes to raw folder
+write.csv(hab_events_raw, row.names = FALSE, 
+          file = "C:/Users/bro7/Documents/CalHabMap_FishCSVI/Data/Raw")
+write.csv(hab_occ_raw, row.names = FALSE, 
+          file = "C:/Users/bro7/Documents/CalHabMap_FishCSVI/Data/Raw")
 ```
+
+
+
 
 ```{r setup}
 #clean up hab_events, (EPSG:4326 WGS84), this df provides location data
@@ -54,6 +73,9 @@ hab_occ_wq <- merge(hab_occ, water_qual, by = c('id')) %>%
 #monterey and sc have lots of na's, wil drop
 na <- hab_occ_wq %>% group_by(locationID) %>% summarise_all(funs(sum(is.na(.))))
 
+#preliminary spatial analysis
+mapview(hab_occ_wq)
+str(hab_occ_wq$locationID)
 ```
 
 ```{r }
